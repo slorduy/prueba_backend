@@ -20,6 +20,8 @@ Route::post('login','userController@login');
 
 Route::group(['middleware' => ['jwt.verify']], function() {
 
+    Route::get('logout','userController@logout');
+
     Route::prefix('product')->group(function () {
 
        Route::post('create','ProductController@store');
@@ -36,6 +38,13 @@ Route::group(['middleware' => ['jwt.verify']], function() {
        Route::post('delete','CartController@delete');
        Route::post('myCar','CartController@myCar');
 
+    });
+
+    Route::prefix('order')->group(function () {
+
+       Route::post('create','OrderController@create');
+       Route::post('myOrders','OrderController@myOrders');
+       
     });
 });
 
