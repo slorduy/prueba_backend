@@ -19,14 +19,19 @@ Route::post('register','userController@registerUser');
 Route::post('login','userController@login');
 
 Route::group(['middleware' => ['jwt.verify']], function() {
-
-    Route::get('logout','userController@logout');
-
-    Route::prefix('product')->group(function () {
-
-       Route::post('create','ProductController@store');
-       Route::post('update','ProductController@update');
-       Route::delete('delete/{id}','ProductController@delete');
+   
+   Route::get('logout','userController@logout');
+   
+   Route::group(['middleware' => ['admin']], function() {
+      
+      Route::prefix('product')->group(function () {
+         
+         Route::post('create','ProductController@store');
+         Route::post('createCsv','ProductController@storeFromCsv');
+          Route::post('update','ProductController@update');
+          Route::delete('delete/{product_id}','ProductController@delete');
+   
+       });
 
     });
 
@@ -42,9 +47,12 @@ Route::group(['middleware' => ['jwt.verify']], function() {
 
     Route::prefix('order')->group(function () {
 
-       Route::post('create','OrderController@create');
-       Route::post('myOrders','OrderController@myOrders');
-       
-    });
+      Route::post('create','OrderController@create');
+      Route::post('myOrders','OrderController@myOrders');
+      Route::group(['middleware' => ['admin']], function() {
+         Route::post('salesReport','OrderController@salesReport');
+      });
+      
+   });
 });
 

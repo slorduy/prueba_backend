@@ -16,7 +16,8 @@ class userController extends Controller
             'name' => 'required|string',
             'email' => 'required|email|unique:user',
             'cellphone' => 'required|string|unique:user',
-            'password' => 'required|string'
+            'password' => 'required|string',
+            'admin' => 'required|boolean'
         ],[
             'name.required' => 'El nombre es requerido',
             'name.string' => 'El nombre no es valido',
@@ -28,6 +29,8 @@ class userController extends Controller
             'email.required' => 'El email es requerido',
             'email.unique' => 'El email ya esta registrado',
             'email.email' => 'El email no es valido',
+            'admin.required' => 'El campo admin  es requerido',
+            'admin.boolean' => 'El campo admin no es valido',
         ]);
        
         if($validator->fails()){
@@ -38,6 +41,7 @@ class userController extends Controller
         $user->name=$request->name;
         $user->cellphone=$request->cellphone;
         $user->email=$request->email;
+        $user->admin=$request->admin;
         $user->password=bcrypt($request->password);
 
         if($user->save()){

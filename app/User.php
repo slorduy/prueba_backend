@@ -9,14 +9,7 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 
 class User extends Authenticatable implements JWTSubject
 {
-    protected $fillable = [
-        'id', 
-        'name',
-        'email',
-        'cellphone',
-        'password'
-    ];
-
+   
     protected $table = "user";
     
     public function getJWTIdentifier()

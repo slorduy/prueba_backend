@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
+    
     public function create (Request $request){
 
         $Validation = Validator::make($request->all(), [
@@ -89,5 +90,33 @@ class OrderController extends Controller
         }
     }
 
+
+    public function salesReport(Request $request){
+        
+        $Validation = Validator::make($request->all(), [
+            'start_date' => 'required|date_format:Y-m-d',
+            'final_date' => 'required|date_format:Y-m-d',
+        ],[
+            'start_date.required' => 'La fecha inicial es requerida',
+            'start_date.date_format' => 'La fecha inicial no es valida',
+            'final_date.required' => 'La fecha final es requerida',
+            'final_date.date_format' => 'La fecha final no es valida',
+        ]);
+        
+        if ($Validation->fails()) {
+            return response()->json([
+                'status' => true,
+                'message' => $Validation->errors()->first()
+            ], 400);
+        }
+
+        $orders = Order::whereBetween('date',array($request->start_date,$request->final_date))->with('getDetail.getProduct')->orderBy('date', 'asc')->get();
+        
+        if($orders){
+            return response()->json(['status' => false , 'data' => $orders]);
+        }else{
+            return response()->json(['status' => false, 'message' => 'No hay ordenes registradas en ese rango de fechas']);
+        }
+    }
 
 }

@@ -12,7 +12,11 @@ use Illuminate\Support\Facades\Validator;
 
 class CartController extends Controller
 {
+    //add cart function 
+
     public function add(Request $request){
+
+       //validate request 
         $Validation = Validator::make($request->all(), [
             'product_id' => 'required|integer',
             'quantity' => 'required|integer',
@@ -32,6 +36,9 @@ class CartController extends Controller
                 'message' => $Validation->errors()->first()
             ], 400);
         }
+
+        //Valid existing user and product ids
+
         $user = User::find($request->user_id);
 
         $product = Product::find($request->product_id);
@@ -50,8 +57,12 @@ class CartController extends Controller
             ], 400);
         }    
 
+
         $cart = Cart::where('user_id',$request->user_id)->first();
+
         if (!$cart){
+
+            // Create a new cart and cart Details for the selected products 
             $newcart = new Cart();
             $newcart->user_id = $user->id;
             if ($newcart->save()){
@@ -63,10 +74,12 @@ class CartController extends Controller
                 $newdetail->save();
             }
         }else{
+            //Validate product in the cart
             $c = Cart::whereHas('getDetails',function ($q) use ($product){
                 $q->where('cart_detail.product_id', $product->id);
             })->where('user_id',$user->id)->first();
             if (is_null($c)){
+                //If the product didnt add in the cart, create a new cartDetail with the product informatio
                 $newdetail = new CartDetail();
                 $newdetail->cart_id = $cart->id;
                 $newdetail->product_id = $product->id;
@@ -74,16 +87,23 @@ class CartController extends Controller
                 $newdetail->quantity = $request->quantity;
                 $newdetail->save();
             }else{
+               //If the product is added in the cart, modify the  cartDetail with the new product quantity
                 $cd = CartDetail::where('cart_id',$cart->id)->where('product_id',$product->id)->first();
                 $cd->quantity = $cd->quantity+$request->quantity;
                 $cd->save();
             }
         }
+
         $cart_list= Cart::where('user_id',$request->user_id)->with('getDetails.getProduct')->first();
         return response()->json(['status' => false,'data'=>$cart_list]);
     }
 
+
+    //update a existing product in the cart
     public function update(Request $request){
+
+        //validate request
+
         $Validation = Validator::make($request->all(), [
             'product_id' => 'required|integer',
             'quantity' => 'required|integer',
@@ -104,6 +124,7 @@ class CartController extends Controller
             ], 400);
         }
 
+        //Validate existing product and user id
         $user = User::find($request->user_id);
 
         if(!$user){
@@ -124,6 +145,7 @@ class CartController extends Controller
 
         $cart = Cart::where('user_id',$request->user_id)->first();
         if ($cart){
+            //get the detail with the product in the cart and then update de quantity with the information
             $cd = CartDetail::where('product_id',$product->id)->where('cart_id',$cart->id)->first();
             $cd->quantity =  $request->quantity;
             if ($cd->save()){
@@ -136,7 +158,11 @@ class CartController extends Controller
 
     }
 
+    //Get the current cart of specifid user
     public function myCar(Request $request){
+
+        //validate request
+
         $Validation = Validator::make($request->all(), [
             'user_id' => 'required|integer'
         ],[
@@ -151,6 +177,7 @@ class CartController extends Controller
             ], 400);
         }
         
+        //validate existing user id
         $user = User::find($request->user_id);
         if(!$user){
             return response()->json([
@@ -159,7 +186,7 @@ class CartController extends Controller
             ], 400);
         } 
 
-
+        //get the cart of the user
         $cart_list= Cart::where('user_id',$user->id)->with('getDetails.getProduct')->first();
         if (!$cart_list){
             return response()->json(['status'=>false,'data'=>[]]);
@@ -169,7 +196,12 @@ class CartController extends Controller
 
     }
 
+    //remove a product in the cart
+
     public function remove(Request $request){
+
+        //validate request 
+
         $Validation = Validator::make($request->all(), [
             'product_id' => 'required|integer',
             'user_id' => 'required|integer'
@@ -204,8 +236,10 @@ class CartController extends Controller
         } 
         $cart = Cart::where('user_id',$user->id)->first();
         if ($cart){
+            //get the detail associated with the product 
             $cd = CartDetail::where('product_id',$product->id)->where('cart_id',$cart->id)->first();
             if($cd){
+                //delete the detail
                 $cd->delete();
             }else{
                 return response()->json([
@@ -220,8 +254,13 @@ class CartController extends Controller
         }
 
     }
+
+    //Remove all cart items
     
     public function delete(Request $request){
+
+        //validate request
+
         $Validation = Validator::make($request->all(), [
             'user_id' => 'required|integer'
         ],[
@@ -236,6 +275,7 @@ class CartController extends Controller
             ], 400);
         }
 
+        //Validate existing user id
         $user = User::find($request->user_id);
         if(!$user){
             return response()->json([
@@ -245,6 +285,7 @@ class CartController extends Controller
         } 
         $cart= Cart::where('user_id',$user->id)->with('getDetails')->first();
         if ($cart){
+            //Get and delete all associated product in the cart
             $cd = CartDetail::where('cart_id',$cart->id)->get();
             if($cd){
                 foreach ($cd as $c){
