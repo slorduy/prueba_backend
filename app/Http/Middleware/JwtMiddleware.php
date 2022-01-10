@@ -22,11 +22,11 @@ class JwtMiddleware
             $user = JWTAuth::parseToken()->authenticate();
         } catch (Exception $e) {
             if ($e instanceof \Tymon\JWTAuth\Exceptions\TokenInvalidException){
-                return response()->json(['status' => true,'message' => 'Usuario no autorizado']);
+                return response()->json(['status' => true,'message' => 'Usuario no autorizado'],401);
             }else if ($e instanceof \Tymon\JWTAuth\Exceptions\TokenExpiredException){
-                return response()->json(['status' => true,'message' => 'Usuario no autorizado']);
+                return response()->json(['status' => true,'message' => 'Usuario no autorizado'],401);
             }else{
-                return response()->json(['status' => true,'message' => 'Usuario no autorizado']);
+                return response()->json(['status' => true,'message' => 'Usuario no autorizado'],401);
             }
         }
         return $next($request);
